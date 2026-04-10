@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Disable Copy Paste",
-  "version": "1.1",
-  "description": "Toggle blocking of copy-paste, text selection, and right-click on any website.",
+  "version": "1.2",
+  "description": "Toggle blocking of copy-paste, text selection, and right-click on any website. Includes a session timer.",
   "permissions": ["scripting", "storage", "tabs"],
   "background": {
     "service_worker": "background.js"
