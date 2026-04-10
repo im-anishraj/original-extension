@@ -46,22 +46,39 @@ document.addEventListener("DOMContentLoaded", async () => {
         const updatedTimers = { ...siteTimers };
 
         if (isEnabled) {
-          // Disabling — remove site and its timer
+          // Disabling — remove site, its timer, and unlock the tab
           updatedList = activeSites.filter((site) => site !== hostname);
           delete updatedTimers[hostname];
+
+          // First remove the lock keys, then update the rest
+          chrome.storage.local.remove(["lockedTabId", "lockedWindowId"], () => {
+            chrome.storage.local.set(
+              { activeSites: updatedList, siteTimers: updatedTimers },
+              () => {
+                chrome.tabs.reload(tab.id);
+                window.close();
+              }
+            );
+          });
+          return; // exit early since we handle everything above
         } else {
-          // Enabling — add site and record activation timestamp
+          // Enabling — add site, record activation timestamp, and lock to this tab
           updatedList = [...activeSites, hostname];
           updatedTimers[hostname] = Date.now();
-        }
 
-        chrome.storage.local.set(
-          { activeSites: updatedList, siteTimers: updatedTimers },
-          () => {
-            chrome.tabs.reload(tab.id);
-            window.close();
-          }
-        );
+          chrome.storage.local.set(
+            {
+              activeSites: updatedList,
+              siteTimers: updatedTimers,
+              lockedTabId: tab.id,
+              lockedWindowId: tab.windowId,
+            },
+            () => {
+              chrome.tabs.reload(tab.id);
+              window.close();
+            }
+          );
+        }
       });
     });
   } catch (error) {
